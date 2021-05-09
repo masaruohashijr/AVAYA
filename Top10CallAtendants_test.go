@@ -22,6 +22,6 @@ func TestSort(t *testing.T) {
 	fmt.Print(want)
 	res, err := Sort(atts)
 	if !want.MatchString(res) || err != nil {
-		t.Fatal("Erro", res, err, want)
+		t.Fatal("Error ", res, err, want)
 	}
 }
