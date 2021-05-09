@@ -24,24 +24,24 @@ func main() {
 	print(Sort(attendants))
 }
 
-func Sort(attendants []mdl.Attendant) (txt string, err error) {
+func Sort(attendants []mdl.Attendant) (result string, err error) {
 	channelMS := make(chan []mdl.Attendant)
 	if len(attendants) == 0 {
 		return "", errors.New("attendants is empty")
 	}
 	go mergeSort(attendants, channelMS)
 	r := <-channelMS
-	txt = "****************************\n"
-	txt += fmt.Sprint("*     TOP 10 Attendants    *\n")
+	result = "****************************\n"
+	result += fmt.Sprint("*     TOP 10 Attendants    *\n")
 	for i, v := range r {
-		txt += fmt.Sprintf("* %v \n", v)
+		result += fmt.Sprintf("* %v \n", v)
 		if i > 9 {
 			break
 		}
 	}
-	txt += fmt.Sprint("****************************\n")
+	result += fmt.Sprint("****************************\n")
 	close(channelMS)
-	return txt, err
+	return result, err
 }
 
 func mergeSort(attendants []mdl.Attendant, channelMS chan []mdl.Attendant) {
@@ -64,27 +64,27 @@ func mergeSort(attendants []mdl.Attendant, channelMS chan []mdl.Attendant) {
 	return
 }
 
-func merge(left, right []mdl.Attendant, mergeChan chan []mdl.Attendant) (arr []mdl.Attendant) {
-	arr = make([]mdl.Attendant, len(left)+len(right))
+func merge(left, right []mdl.Attendant, mergeChan chan []mdl.Attendant) (merged []mdl.Attendant) {
+	merged = make([]mdl.Attendant, len(left)+len(right))
 	j, k := 0, 0
-	for i := 0; i < len(arr); i++ {
+	for i := 0; i < len(merged); i++ {
 		if j >= len(left) {
-			arr[i] = right[k]
+			merged[i] = right[k]
 			k++
 			continue
 		} else if k >= len(right) {
-			arr[i] = left[j]
+			merged[i] = left[j]
 			j++
 			continue
 		}
 		if left[j].TotalMonthCalls <= right[k].TotalMonthCalls {
-			arr[i] = right[k]
+			merged[i] = right[k]
 			k++
 		} else {
-			arr[i] = left[j]
+			merged[i] = left[j]
 			j++
 		}
 	}
-	mergeChan <- arr
+	mergeChan <- merged
 	return
 }
