@@ -11,8 +11,13 @@ import (
 
 func main() {
 	qttAttendants := 100
-	if len(os.Args) >= 1 {
-		qttAttendants, _ = strconv.Atoi(os.Args[1])
+	var err error
+	if len(os.Args) > 1 {
+		qttAttendants, err = strconv.Atoi(os.Args[1])
+		if err != nil {
+			println("Error parsing to integer")
+			qttAttendants = 100
+		}
 	}
 	attendants := u.LoadAttendants(qttAttendants)
 	attendants = u.LoadCalls(attendants)
@@ -20,12 +25,12 @@ func main() {
 }
 
 func Sort(attendants []mdl.Attendant) (txt string, err error) {
-	MS := make(chan []mdl.Attendant)
+	channelMS := make(chan []mdl.Attendant)
 	if len(attendants) == 0 {
 		return "", errors.New("attendants is empty")
 	}
-	go mergeSort(attendants, MS)
-	r := <-MS
+	go mergeSort(attendants, channelMS)
+	r := <-channelMS
 	txt = "****************************\n"
 	txt += fmt.Sprint("*     TOP 10 Attendants    *\n")
 	for i, v := range r {
@@ -35,51 +40,51 @@ func Sort(attendants []mdl.Attendant) (txt string, err error) {
 		}
 	}
 	txt += fmt.Sprint("****************************\n")
-	close(MS)
+	close(channelMS)
 	return txt, err
 }
 
-func mergeSort(A []mdl.Attendant, MS chan []mdl.Attendant) {
-	if len(A) == 1 {
-		MS <- A
+func mergeSort(attendants []mdl.Attendant, channelMS chan []mdl.Attendant) {
+	if len(attendants) == 1 {
+		channelMS <- attendants
 		return
 	}
-	leftChan := make(chan []mdl.Attendant)
-	rightChan := make(chan []mdl.Attendant)
-	left, right := A[0:len(A)/2], A[len(A)/2:]
-	go mergeSort(left, leftChan)
-	go mergeSort(right, rightChan)
-	left, right = <-leftChan, <-rightChan
-	close(leftChan)
-	close(rightChan)
+	channelLeft := make(chan []mdl.Attendant)
+	channelRight := make(chan []mdl.Attendant)
+	left, right := attendants[0:len(attendants)/2], attendants[len(attendants)/2:]
+	go mergeSort(left, channelLeft)
+	go mergeSort(right, channelRight)
+	left, right = <-channelLeft, <-channelRight
+	close(channelLeft)
+	close(channelRight)
 	mergeChan := make(chan []mdl.Attendant)
 	go merge(left, right, mergeChan)
-	MS <- <-mergeChan
+	channelMS <- <-mergeChan
 	close(mergeChan)
 	return
 }
 
-func merge(A, B []mdl.Attendant, MC chan []mdl.Attendant) (arr []mdl.Attendant) {
-	arr = make([]mdl.Attendant, len(A)+len(B))
+func merge(left, right []mdl.Attendant, mergeChan chan []mdl.Attendant) (arr []mdl.Attendant) {
+	arr = make([]mdl.Attendant, len(left)+len(right))
 	j, k := 0, 0
 	for i := 0; i < len(arr); i++ {
-		if j >= len(A) {
-			arr[i] = B[k]
+		if j >= len(left) {
+			arr[i] = right[k]
 			k++
 			continue
-		} else if k >= len(B) {
-			arr[i] = A[j]
+		} else if k >= len(right) {
+			arr[i] = left[j]
 			j++
 			continue
 		}
-		if A[j].TotalMonthCalls <= B[k].TotalMonthCalls {
-			arr[i] = B[k]
+		if left[j].TotalMonthCalls <= right[k].TotalMonthCalls {
+			arr[i] = right[k]
 			k++
 		} else {
-			arr[i] = A[j]
+			arr[i] = left[j]
 			j++
 		}
 	}
-	MC <- arr
+	mergeChan <- arr
 	return
 }
