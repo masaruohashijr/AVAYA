@@ -55,6 +55,7 @@ func mergeSort(A []mdl.Attendant, MS chan []mdl.Attendant) {
 	mergeChan := make(chan []mdl.Attendant)
 	go merge(left, right, mergeChan)
 	MS <- <-mergeChan
+	close(mergeChan)
 	return
 }
 
