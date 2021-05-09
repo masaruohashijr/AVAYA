@@ -3,6 +3,7 @@ package main
 import (
 	mdl "AVAYA/models"
 	u "AVAYA/utils"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -15,20 +16,27 @@ func main() {
 	}
 	attendants := u.LoadAttendants(qttAttendants)
 	attendants = u.LoadCalls(attendants)
+	print(Sort(attendants))
+}
+
+func Sort(attendants []mdl.Attendant) (txt string, err error) {
 	MS := make(chan []mdl.Attendant)
+	if len(attendants) == 0 {
+		return "", errors.New("attendants is empty")
+	}
 	go mergeSort(attendants, MS)
 	r := <-MS
-	fmt.Println("****************************")
-	fmt.Println("*     TOP 10 Attendants    *")
+	txt = "****************************\n"
+	txt += fmt.Sprint("*     TOP 10 Attendants    *\n")
 	for i, v := range r {
-		fmt.Printf("* %v \n", v)
+		txt += fmt.Sprintf("* %v \n", v)
 		if i > 9 {
 			break
 		}
 	}
-	fmt.Println("****************************")
-
+	txt += fmt.Sprint("****************************\n")
 	close(MS)
+	return txt, err
 }
 
 func mergeSort(A []mdl.Attendant, MS chan []mdl.Attendant) {
