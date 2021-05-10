@@ -55,13 +55,13 @@ func LoadCalls(attendants []mdl.Attendant) []mdl.Attendant {
 		qttDays := 1
 		daysOfWork = make(map[int][]mdl.Call)
 		totalMonthCalls := 0
-		for qttDays <= 20 {
+		for qttDays <= 20 { // Assertion 1
 			day := rand.Intn(30) + 1
 			if _, ok := daysOfWork[day]; !ok {
-				duration := 480
+				duration := 480 // Equivalent to 8 hours - Assertion 2
 				for duration > 0 {
 					call.Day = day
-					call.Duration = rand.Intn(40) + 5
+					call.Duration = rand.Intn(40) + 5 // Assertion 3
 					call.Attendant = attendant
 					calls = append(calls, call)
 					duration -= call.Duration
