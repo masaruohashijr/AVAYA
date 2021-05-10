@@ -55,11 +55,13 @@ func mergeSort(attendants []mdl.Attendant, channelMS chan []mdl.Attendant) {
 	}
 	channelLeft := make(chan []mdl.Attendant)
 	channelRight := make(chan []mdl.Attendant)
-	// Splits the attendants
+	// Splits the attendants array into two parts: left and right.
 	left, right := attendants[0:len(attendants)/2], attendants[len(attendants)/2:]
+	// goroutine mergeSort
 	go mergeSort(left, channelLeft)
 	go mergeSort(right, channelRight)
 	left, right = <-channelLeft, <-channelRight
+	// the sender is the only sender of the channel, so we dont need to close the channel politely or gracefully.
 	close(channelLeft)
 	close(channelRight)
 	mergeChan := make(chan []mdl.Attendant)
