@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+// Provides sorting functions of the attendants collections by total of call per month.
 func main() {
 	qttAttendants := 100
 	var err error
@@ -24,6 +25,7 @@ func main() {
 	print(Sort(attendants))
 }
 
+// Calls the sort function used and formats the output in string.
 func Sort(attendants []mdl.Attendant) (result string, err error) {
 	channelMS := make(chan []mdl.Attendant)
 	if len(attendants) == 0 {
@@ -44,6 +46,8 @@ func Sort(attendants []mdl.Attendant) (result string, err error) {
 	return result, err
 }
 
+// Applies the merge sort algorithm to split a bigger array in halves, successively, until the length reachs 1,
+// so the merge function is called in sequence, positioning each attendant in crescent order of total call per month.
 func mergeSort(attendants []mdl.Attendant, channelMS chan []mdl.Attendant) {
 	if len(attendants) == 1 {
 		channelMS <- attendants
@@ -51,6 +55,7 @@ func mergeSort(attendants []mdl.Attendant, channelMS chan []mdl.Attendant) {
 	}
 	channelLeft := make(chan []mdl.Attendant)
 	channelRight := make(chan []mdl.Attendant)
+	// Splits the attendants
 	left, right := attendants[0:len(attendants)/2], attendants[len(attendants)/2:]
 	go mergeSort(left, channelLeft)
 	go mergeSort(right, channelRight)
@@ -64,6 +69,7 @@ func mergeSort(attendants []mdl.Attendant, channelMS chan []mdl.Attendant) {
 	return
 }
 
+// Assemble the merged array correctly positioning each attendant from the halves being gone through.
 func merge(left, right []mdl.Attendant, mergeChan chan []mdl.Attendant) (merged []mdl.Attendant) {
 	merged = make([]mdl.Attendant, len(left)+len(right))
 	j, k := 0, 0
@@ -77,6 +83,7 @@ func merge(left, right []mdl.Attendant, mergeChan chan []mdl.Attendant) (merged 
 			j++
 			continue
 		}
+		// TotalMonthCalls
 		if left[j].TotalMonthCalls <= right[k].TotalMonthCalls {
 			merged[i] = right[k]
 			k++
