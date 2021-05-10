@@ -11,6 +11,7 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 )
 
+// Loads attendants from an excel file extracting name and setting ids.
 func LoadAttendants(qtt int) []mdl.Attendant {
 
 	f, err := excelize.OpenFile("saopaulo.xlsx")
@@ -41,10 +42,11 @@ func LoadAttendants(qtt int) []mdl.Attendant {
 	return attendants
 }
 
+// Loads calls for each attendant.
+// Assertion 1: 20 days per month - from 1 to 31
+// Assertion 2: 8 hours per day
+// Assertion 3: A call lasts from 5 to 45 minutes.
 func LoadCalls(attendants []mdl.Attendant) []mdl.Attendant {
-	// 20 days per month - from 1 to 31
-	// 8 hours per day
-	// A call lasts from 5 to 45 minutes.
 	var daysOfWork map[int][]mdl.Call
 	var calls []mdl.Call
 	var call mdl.Call
